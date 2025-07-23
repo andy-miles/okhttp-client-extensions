@@ -194,14 +194,16 @@ public class OkHttpClientBuilder {
      * @return the configured HTTP client
      */
     public OkHttpClient build() {
+        final OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+                .followSslRedirects(isRedirectsAllowed)
+                .followRedirects(isRedirectsAllowed)
+                .connectTimeout(connectTimeout)
+                .readTimeout(readTimeout)
+                .writeTimeout(writeTimeout)
+                .connectionSpecs(getConnectionSpecs());
+        clientBuilder.interceptors().addAll(interceptors);
         return configureProxy(
-                configureSsl(new OkHttpClient.Builder()
-                        .followSslRedirects(isRedirectsAllowed)
-                        .followRedirects(isRedirectsAllowed)
-                        .connectTimeout(connectTimeout)
-                        .readTimeout(readTimeout)
-                        .writeTimeout(writeTimeout)
-                        .connectionSpecs(getConnectionSpecs())))
+                configureSsl(clientBuilder))
                 .build();
     }
 

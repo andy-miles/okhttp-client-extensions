@@ -46,7 +46,7 @@ public interface GsonParser<T> {
      * @param jsonContent the byte array
      * @return the parsed POJO instance
      */
-    default T parse(@NonNull final Gson gson, @NonNull final byte[] jsonContent) throws IOException {
+    default T parse(@NonNull final Gson gson, final byte @NonNull [] jsonContent) throws IOException {
         try (final InputStream contentStream = new ByteArrayInputStream(jsonContent)) {
             return parse(gson, contentStream);
         }

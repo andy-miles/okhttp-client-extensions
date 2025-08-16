@@ -39,8 +39,7 @@ public class CryptoHelperFactory {
     @NonNull
     private final KeyStoreHelper keyStoreHelper;
     /** The password for the keystore. */
-    @NonNull
-    private final char[] keyPassword;
+    private final char @NonNull [] keyPassword;
     /** The key alias that is stored in the keystore. */
     @Builder.Default
     @NonNull

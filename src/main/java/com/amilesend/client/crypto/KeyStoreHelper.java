@@ -43,8 +43,7 @@ public class KeyStoreHelper {
     @NonNull
     private final Path keyStorePath;
     /** The password to access the key store. */
-    @NonNull
-    private final char[] keyStorePassword;
+    private final char @NonNull [] keyStorePassword;
 
     /**
      * Saves the given {@code key} to the key store. Notes:
@@ -60,7 +59,7 @@ public class KeyStoreHelper {
      * @param keyPassword the password that is specific to the key
      * @throws KeyStoreHelperException if an error occurred while saving the key to the key store
      */
-    public void saveSecretKey(final String alias, @NonNull final SecretKey key, @NonNull final char[] keyPassword)
+    public void saveSecretKey(final String alias, @NonNull final SecretKey key, final char @NonNull [] keyPassword)
             throws KeyStoreHelperException {
         Validate.notBlank(alias, "alias must not be blank");
 
@@ -93,7 +92,7 @@ public class KeyStoreHelper {
      * @return the key, or {@code null}
      * @throws KeyStoreHelperException if an error occurred while retrieving the key
      */
-    public SecretKey getSecretKey(final String alias, @NonNull final char[] keyPassword)
+    public SecretKey getSecretKey(final String alias, final char @NonNull [] keyPassword)
             throws KeyStoreHelperException {
         Validate.notBlank(alias, "alias must not be blank");
 
@@ -104,7 +103,7 @@ public class KeyStoreHelper {
                 return null;
             }
 
-            if (!SecretKey.class.isInstance(key)) {
+            if (!(key instanceof SecretKey)) {
                 throw new KeyStoreHelperException("Retrieved key is not a SecretKey");
             }
 

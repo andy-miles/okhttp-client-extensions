@@ -79,7 +79,7 @@ public abstract class GsonFactoryBase<T extends Connection> {
 
     /** Clears all cached instances. */
     public void clearAll() {
-        configuredInstances.clear();;
+        configuredInstances.clear();
         configuredPrettyPrintedInstances.clear();
     }
 

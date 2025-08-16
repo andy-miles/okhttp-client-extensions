@@ -31,6 +31,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,7 +104,7 @@ public class Connection<G extends GsonFactoryBase> {
         try {
             try (final Response response = execute(request)) {
                 final InputStream responseBodyInputStream =
-                        StringUtils.equalsIgnoreCase("gzip", response.header(CONTENT_ENCODING))
+                        Strings.CI.equals("gzip", response.header(CONTENT_ENCODING))
                                 ? new GZIPInputStream(response.body().byteStream())
                                 : response.body().byteStream();
                 return parser.parse(gsonFactory.getInstance(this), responseBodyInputStream);
@@ -145,17 +146,9 @@ public class Connection<G extends GsonFactoryBase> {
 
         final boolean isRequestError = String.valueOf(code).startsWith("4");
         if (isRequestError) {
-            throw new RequestException(new StringBuilder("Error with request (")
-                    .append(code)
-                    .append("): ")
-                    .append(response)
-                    .toString());
+            throw new RequestException("Error with request (" + code + "): " + response);
         } else if (!response.isSuccessful()) {
-            throw new ResponseException(new StringBuilder("Unsuccessful response (")
-                    .append(code)
-                    .append("): ")
-                    .append(response)
-                    .toString());
+            throw new ResponseException("Unsuccessful response (" + code + "): " + response);
         }
     }
 

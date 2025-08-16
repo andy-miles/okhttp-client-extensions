@@ -67,7 +67,7 @@ public class CryptoHelper {
      * @return the {@link EncryptedEnvelope} containing the encrypted bytes
      * @throws CryptoHelperException if an error occurred while encrypting the contents
      */
-    public EncryptedEnvelope encrypt(@NonNull final byte[] content, final String description)
+    public EncryptedEnvelope encrypt(final byte @NonNull [] content, final String description)
             throws CryptoHelperException {
         log.debug("Encrypting {}", description);
         final IvParameterSpec ivSpec = generativeIv();

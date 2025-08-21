@@ -18,6 +18,7 @@
 package com.amilesend.client.connection.http;
 
 import com.amilesend.client.connection.ConnectionException;
+import com.amilesend.client.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import okhttp3.Authenticator;
@@ -28,7 +29,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.Route;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.HostnameVerifier;

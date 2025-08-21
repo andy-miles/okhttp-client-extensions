@@ -17,10 +17,10 @@
  */
 package com.amilesend.client.crypto;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.amilesend.client.util.Validate;
+import com.amilesend.client.util.VisibleForTesting;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.Validate;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;

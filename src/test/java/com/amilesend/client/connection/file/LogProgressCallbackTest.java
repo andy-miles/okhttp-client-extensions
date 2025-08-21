@@ -17,7 +17,7 @@
  */
 package com.amilesend.client.connection.file;
 
-import org.apache.commons.lang3.StringUtils;
+import com.amilesend.client.util.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

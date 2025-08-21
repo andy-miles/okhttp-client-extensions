@@ -17,8 +17,8 @@
  */
 package com.amilesend.client.connection.http;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
+import com.amilesend.client.util.Pair;
+import com.amilesend.client.util.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import lombok.Builder;
@@ -36,19 +36,19 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.GzipSource;
 import okio.Okio;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 
-import static com.google.common.net.HttpHeaders.CONTENT_ENCODING;
+import static com.amilesend.client.connection.Connection.Headers.CONTENT_ENCODING;
 
 /**
  * A logging interceptor to aid in debugging.
@@ -85,7 +85,7 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
 
     @Override
     public Response intercept(@NonNull final Chain chain) throws IOException {
-        final Stopwatch watch = Stopwatch.createStarted();
+        final long startTime = System.currentTimeMillis();
         final Request request = chain.request();
         if (isRequestLogged) {
             log.atLevel(loggingLevel)
@@ -96,9 +96,8 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
         }
         final Response response = chain.proceed(request);
 
-        watch.stop();
+        final long responseTimeMs = System.currentTimeMillis() - startTime;
         if (isResponseLogged) {
-            final long responseTimeMs = watch.elapsed(TimeUnit.MILLISECONDS);
             final Pair<String, Response> bodyResponsePair = extractResponseBodyAsString(response);
             final String responseCode = new StringBuilder("\nHTTP Response (")
                     .append(response.protocol()
@@ -131,13 +130,13 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
         final RequestBody body = request.body();
         final MediaType mediaType = body.contentType();
         final String type = mediaType.type();
-        final boolean isApplicationType = StringUtils.equals(type, "application");
-        if (!StringUtils.equals(type, "text") && !isApplicationType) {
+        final boolean isApplicationType = "application".equals(type);
+        if (!"text".equals(type) && !isApplicationType) {
             return "[Unsupported content type: " + mediaType + "]";
         }
 
         final String subType = mediaType.subtype();
-        final boolean isSubTypeJson = StringUtils.equals(subType, "json");
+        final boolean isSubTypeJson = "json".equals(subType);
         if (isApplicationType && !isSubTypeJson) {
             return "[Unsupported content type: " + mediaType + "]";
         }
@@ -163,13 +162,13 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
         final ResponseBody body = response.body();
         final MediaType mediaType = body.contentType();
         final String type = mediaType.type();
-        final boolean isApplicationType = StringUtils.equals(type, "application");
-        if (!StringUtils.equals(type, "text") && !isApplicationType) {
+        final boolean isApplicationType = "application".equals(type);
+        if (!"text".equals(type) && !isApplicationType) {
             return Pair.of("[Unsupported content type: " + mediaType + "]", response);
         }
 
         final String subType = mediaType.subtype();
-        final boolean isSubTypeJson = StringUtils.equals(subType, "json");
+        final boolean isSubTypeJson = "json".equals(subType);
         if (isApplicationType && !isSubTypeJson) {
             return Pair.of("[Unsupported content type: " + mediaType + "]", response);
         }
@@ -178,7 +177,7 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
             final String bodyContent = newBufferedSource(body).readUtf8();
             final Response wrappedResponse = response.newBuilder()
                     .removeHeader(CONTENT_ENCODING)
-                    .body(ResponseBody.create(mediaType, bodyContent))
+                    .body(ResponseBody.create(bodyContent, mediaType))
                     .build();
             final String formattedBodyContent = isSubTypeJson ? gsonify(bodyContent) : bodyContent;
             return Pair.of(formattedBodyContent, wrappedResponse);
@@ -186,7 +185,7 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
 
         final String bodyContent = body.string();
         final Response wrappedResponse = response.newBuilder()
-                .body(ResponseBody.create(mediaType, bodyContent))
+                .body(ResponseBody.create(bodyContent, mediaType))
                 .build();
         final String formattedBodyContent = isSubTypeJson ? gsonify(bodyContent) : bodyContent;
         return Pair.of(formattedBodyContent, wrappedResponse);
@@ -199,7 +198,7 @@ public class HttpJsonLoggingInterceptor implements Interceptor {
 
     @VisibleForTesting
     String gsonify(final String value) {
-        return gson.toJson(new JsonParser().parse(value));
+        return gson.toJson(JsonParser.parseString(value));
     }
 
     @VisibleForTesting

@@ -17,6 +17,7 @@
  */
 package com.amilesend.client.connection.http;
 
+import com.amilesend.client.util.Pair;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import okhttp3.Headers;
@@ -30,8 +31,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.BufferedSource;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +44,7 @@ import org.slf4j.spi.LoggingEventBuilder;
 
 import java.io.IOException;
 
-import static com.google.common.net.HttpHeaders.CONTENT_ENCODING;
+import static com.amilesend.client.connection.Connection.Headers.CONTENT_ENCODING;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -173,8 +172,8 @@ public class HttpJsonLoggingInterceptorTest {
                             eq("HeaderValue"),
                             eq("BodyValue"));
                     final String codeCaptorValue = codeCaptor.getValue();
-                    assertTrue(StringUtils.contains(codeCaptorValue, "HTTP Response (")
-                            && StringUtils.contains(codeCaptorValue, "HTTP/2"));
+                    assertTrue(codeCaptorValue.contains("HTTP Response (")
+                            && codeCaptorValue.contains("HTTP/2"));
                 });
     }
 
@@ -317,8 +316,8 @@ public class HttpJsonLoggingInterceptorTest {
         final ResponseBody mockDeflatedResponseBody = mock(ResponseBody.class);
         try (final MockedStatic<ResponseBody> bodyMockedStatic = mockStatic(ResponseBody.class)) {
             bodyMockedStatic.when(() -> ResponseBody.create(
-                            any(MediaType.class),
-                            anyString()))
+                            anyString(),
+                            any(MediaType.class)))
                     .thenReturn(mockDeflatedResponseBody);
 
             final Pair<String, Response> actual = interceptorUnderTest.extractResponseBodyAsString(mockResponse);
@@ -345,8 +344,8 @@ public class HttpJsonLoggingInterceptorTest {
         final ResponseBody mockDeflatedResponseBody = mock(ResponseBody.class);
         try (final MockedStatic<ResponseBody> bodyMockedStatic = mockStatic(ResponseBody.class)) {
             bodyMockedStatic.when(() -> ResponseBody.create(
-                            any(MediaType.class),
-                            anyString()))
+                            anyString(),
+                            any(MediaType.class)))
                     .thenReturn(mockDeflatedResponseBody);
 
             final Pair<String, Response> actual = interceptorUnderTest.extractResponseBodyAsString(mockResponse);
@@ -392,10 +391,11 @@ public class HttpJsonLoggingInterceptorTest {
         final String actual = interceptorUnderTest.redactHeaders(headers);
 
         assertAll(
-                () -> assertTrue(StringUtils.contains(actual, "Header1")),
-                () -> assertTrue(StringUtils.contains(actual, "Value1")),
-                () -> assertTrue(StringUtils.contains(actual, "Header2")),
-                () -> assertTrue(StringUtils.contains(actual, "Value2")));
+                () -> assertNotNull(actual),
+                () -> assertTrue(actual.contains("Header1")),
+                () -> assertTrue(actual.contains("Value1")),
+                () -> assertTrue(actual.contains("Header2")),
+                () -> assertTrue(actual.contains("Value2")));
     }
 
     @Test
@@ -412,11 +412,12 @@ public class HttpJsonLoggingInterceptorTest {
         final String actual = interceptorUnderTest.redactHeaders(headers);
 
         assertAll(
-                () -> assertTrue(StringUtils.contains(actual, "Header1")),
-                () -> assertTrue(StringUtils.contains(actual, "Value1")),
-                () -> assertTrue(StringUtils.contains(actual, "Header2")),
-                () -> assertFalse(StringUtils.contains(actual, "Value2")),
-                () -> assertTrue(StringUtils.contains(actual, " **********")));
+                () -> assertNotNull(actual),
+                () -> assertTrue(actual.contains("Header1")),
+                () -> assertTrue(actual.contains("Value1")),
+                () -> assertTrue(actual.contains("Header2")),
+                () -> assertFalse(actual.contains("Value2")),
+                () -> assertTrue(actual.contains(" **********")));
     }
 
     //////////////

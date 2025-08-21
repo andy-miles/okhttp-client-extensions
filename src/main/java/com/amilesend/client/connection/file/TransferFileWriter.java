@@ -17,13 +17,13 @@
  */
 package com.amilesend.client.connection.file;
 
+import com.amilesend.client.util.Validate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.NonNull;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.Okio;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.nio.file.Path;

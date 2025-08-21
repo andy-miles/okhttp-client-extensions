@@ -20,35 +20,36 @@ package com.amilesend.client.connection;
 import com.amilesend.client.connection.auth.AuthManager;
 import com.amilesend.client.parse.GsonFactoryBase;
 import com.amilesend.client.parse.parser.GsonParser;
-import com.google.common.annotations.VisibleForTesting;
+import com.amilesend.client.util.StringUtils;
+import com.amilesend.client.util.VisibleForTesting;
 import com.google.gson.JsonParseException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
-import static com.google.common.net.HttpHeaders.ACCEPT;
-import static com.google.common.net.HttpHeaders.ACCEPT_ENCODING;
-import static com.google.common.net.HttpHeaders.CONTENT_ENCODING;
-import static com.google.common.net.HttpHeaders.USER_AGENT;
-import static com.google.common.net.MediaType.JSON_UTF_8;
+import static com.amilesend.client.connection.Connection.Headers.ACCEPT;
+import static com.amilesend.client.connection.Connection.Headers.ACCEPT_ENCODING;
+import static com.amilesend.client.connection.Connection.Headers.CONTENT_ENCODING;
+import static com.amilesend.client.connection.Connection.Headers.USER_AGENT;
 
 /** Wraps an {@link OkHttpClient} that manages parsing responses to corresponding POJO types. */
 @SuperBuilder
 @Getter
 @Slf4j
 public class Connection<G extends GsonFactoryBase> {
-    public static final String JSON_CONTENT_TYPE = JSON_UTF_8.toString();
+    public static final String FORM_DATA_CONTENT_TYPE = "application/x-www-form-urlencoded";
+    public static final MediaType FORM_DATA_MEDIA_TYPE = MediaType.parse(FORM_DATA_CONTENT_TYPE);
+    public static final String JSON_CONTENT_TYPE = "application/json; charset=utf-8";
     public static final MediaType JSON_MEDIA_TYPE = MediaType.parse(JSON_CONTENT_TYPE);
 
     protected static final String THROTTLED_RETRY_AFTER_HEADER = "Retry-After";
@@ -104,7 +105,7 @@ public class Connection<G extends GsonFactoryBase> {
         try {
             try (final Response response = execute(request)) {
                 final InputStream responseBodyInputStream =
-                        Strings.CI.equals("gzip", response.header(CONTENT_ENCODING))
+                        "gzip".equals(response.header(CONTENT_ENCODING))
                                 ? new GZIPInputStream(response.body().byteStream())
                                 : response.body().byteStream();
                 return parser.parse(gsonFactory.getInstance(this), responseBodyInputStream);
@@ -158,5 +159,15 @@ public class Connection<G extends GsonFactoryBase> {
         return StringUtils.isNotBlank(retryAfterHeaderValue)
                 ? Long.valueOf(retryAfterHeaderValue)
                 : DEFAULT_RETRY_AFTER_SECONDS;
+    }
+
+    @UtilityClass
+    public static class Headers {
+        public static final String ACCEPT = "Accept";
+        public static final String ACCEPT_ENCODING = "Accept-Encoding";
+        public static final String AUTHORIZATION = "Authorization";
+        public static final String CONTENT_ENCODING = "Content-Encoding";
+        public static final String CONTENT_TYPE = "Content-Type";
+        public static final String USER_AGENT = "User-Agent";
     }
 }

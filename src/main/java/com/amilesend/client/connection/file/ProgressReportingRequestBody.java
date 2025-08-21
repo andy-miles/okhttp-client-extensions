@@ -17,7 +17,9 @@
  */
 package com.amilesend.client.connection.file;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.amilesend.client.util.StringUtils;
+import com.amilesend.client.util.Validate;
+import com.amilesend.client.util.VisibleForTesting;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +30,6 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 import okio.Okio;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.nio.file.Files;

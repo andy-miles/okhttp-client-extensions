@@ -19,10 +19,10 @@ package com.amilesend.client.connection;
 
 import com.amilesend.client.connection.auth.AuthManager;
 import com.amilesend.client.parse.GsonFactoryBase;
+import com.amilesend.client.util.Validate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.Validate;
 
 /**
  * Builder to construct new default instances of a {@link Connection}.

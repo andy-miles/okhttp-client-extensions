@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ConnectionTestBase {
-    protected static final String USER_AGENT = "ConnectionTest/1.0";
+    protected static final String USER_AGENT_VALUE = "ConnectionTest/1.0";
     protected static final int SUCCESS_RESPONSE_CODE = 200;
     protected static final int REQUEST_ERROR_CODE = 403;
     protected static final int THROTTLED_ERROR_CODE = 429;
@@ -67,7 +67,7 @@ public class ConnectionTestBase {
                 .gsonFactory(mockGsonFactory)
                 .authManager(mockAuthManager)
                 .baseUrl("http://baseurl")
-                .userAgent(USER_AGENT)
+                .userAgent(USER_AGENT_VALUE)
                 .isGzipContentEncodingEnabled(true)
                 .build());
     }

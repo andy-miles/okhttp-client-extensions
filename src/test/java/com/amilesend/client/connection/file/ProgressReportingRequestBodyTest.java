@@ -17,13 +17,13 @@
  */
 package com.amilesend.client.connection.file;
 
+import com.amilesend.client.util.StringUtils;
 import lombok.SneakyThrows;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -150,9 +150,9 @@ public class ProgressReportingRequestBodyTest {
             assertAll(
                     () -> assertNotNull(actual),
                     () -> assertInstanceOf(ProgressReportingRequestBody.class, actual),
-                    () -> assertTrue(StringUtils.startsWith(
-                            actual.contentType().toString(),
-                            "multipart/form-data; boundary=")));
+                    () -> assertTrue(actual.contentType()
+                            .toString()
+                            .startsWith("multipart/form-data; boundary=")));
         }
     }
 
@@ -207,13 +207,11 @@ public class ProgressReportingRequestBodyTest {
             assertAll(
                     () -> assertNotNull(actual),
                     () -> assertInstanceOf(ProgressReportingRequestBody.class, actual),
-                    () -> assertTrue(StringUtils.startsWith(
-                            actual.contentType().toString(),
-                            "multipart/form-data; boundary=")));
+                    () -> assertTrue(actual.contentType()
+                            .toString()
+                            .startsWith("multipart/form-data; boundary=")));
         }
     }
-
-
 
     @Test
     @SneakyThrows
@@ -413,8 +411,6 @@ public class ProgressReportingRequestBodyTest {
                     () -> assertEquals("text/csv", actual.contentType().toString()));
         }
     }
-
-
 
     @Test
     @SneakyThrows

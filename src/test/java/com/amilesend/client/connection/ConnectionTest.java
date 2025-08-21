@@ -17,7 +17,6 @@
  */
 package com.amilesend.client.connection;
 
-import com.google.common.net.HttpHeaders;
 import okhttp3.Headers;
 import okhttp3.Request;
 import org.junit.jupiter.api.Test;
@@ -25,6 +24,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.amilesend.client.connection.Connection.Headers.ACCEPT;
+import static com.amilesend.client.connection.Connection.Headers.ACCEPT_ENCODING;
+import static com.amilesend.client.connection.Connection.Headers.USER_AGENT;
 import static com.amilesend.client.connection.Connection.JSON_CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +39,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ConnectionTest extends ConnectionTestBase {
     private static final String BASE_URL = "https://base.com/";
-    private static final String USER_AGENT = "ConnectionTest/1.0";
 
     /////////
     // ctor
@@ -52,7 +53,7 @@ public class ConnectionTest extends ConnectionTestBase {
                                 .gsonFactory(mockGsonFactory)
                                 .authManager(mockAuthManager)
                                 .baseUrl(BASE_URL)
-                                .userAgent(USER_AGENT)
+                                .userAgent(USER_AGENT_VALUE)
                                 .build()),
                 () -> assertThrows(NullPointerException.class,
                         () -> new DefaultConnectionBuilder()
@@ -60,7 +61,7 @@ public class ConnectionTest extends ConnectionTestBase {
                                 .gsonFactory(null)
                                 .authManager(mockAuthManager)
                                 .baseUrl(BASE_URL)
-                                .userAgent(USER_AGENT)
+                                .userAgent(USER_AGENT_VALUE)
                                 .build()));
     }
 
@@ -87,7 +88,7 @@ public class ConnectionTest extends ConnectionTestBase {
                 .gsonFactory(mockGsonFactory)
                 .authManager(mockAuthManager)
                 .baseUrl("http://baseurl")
-                .userAgent(USER_AGENT)
+                .userAgent(USER_AGENT_VALUE)
                 .isGzipContentEncodingEnabled(false)
                 .build());
         final Request.Builder expected = new Request.Builder();
@@ -106,11 +107,11 @@ public class ConnectionTest extends ConnectionTestBase {
         verify(mockAuthManager).addAuthentication(requestBuilderCaptor.capture());
         final Headers headers = requestBuilderCaptor.getValue().url("Http://someurl").build().headers();
         assertAll(
-                () -> assertEquals(USER_AGENT, headers.get(HttpHeaders.USER_AGENT)),
-                () -> assertEquals(acceptType, headers.get(HttpHeaders.ACCEPT)),
+                () -> assertEquals(USER_AGENT_VALUE, headers.get(USER_AGENT)),
+                () -> assertEquals(acceptType, headers.get(ACCEPT)),
                 () -> {
                     if (isAcceptEncodingValidated) {
-                        assertEquals("gzip", headers.get(HttpHeaders.ACCEPT_ENCODING));
+                        assertEquals("gzip", headers.get(ACCEPT_ENCODING));
                     }
                 });
     }

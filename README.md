@@ -64,6 +64,7 @@ It currently supports the following clients:
 * [tmdb-java-client](https://github.com/andy-miles/tmdb-java-client)
 * [omdb-java-client](https://github.com/andy-miles/omdb-java-client)
 * [tvmaze-java-client](https://github.com/andy-miles/tvmaze-java-client)
+* [discogs-java-client](https://github.com/andy-miles/discogs-java-client)
 
 
 <div align="right">(<a href="#readme-top">back to top</a>)</div>

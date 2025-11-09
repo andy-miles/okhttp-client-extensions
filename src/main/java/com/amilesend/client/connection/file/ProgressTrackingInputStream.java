@@ -44,6 +44,11 @@ public class ProgressTrackingInputStream extends InputStream {
     }
 
     @Override
+    public void close() throws IOException {
+        delegate.close();
+    }
+
+    @Override
     public int read() throws IOException {
         try {
             final int byteValue = delegate.read();

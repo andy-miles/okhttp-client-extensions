@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -39,6 +40,26 @@ public class ProgressTrackingInputStreamTest {
     @BeforeEach
     public void setUp() {
         inputStreamUnderTest = spy(new ProgressTrackingInputStream(mockDelegate, mockCallback, TOTAL_BYTES));
+    }
+
+    ////////////
+    // close()
+    ////////////
+
+    @Test
+    @SneakyThrows
+    public void close_withNoException_shouldCloseDelegate() {
+        inputStreamUnderTest.close();
+
+        verify(mockDelegate).close();
+    }
+
+    @Test
+    @SneakyThrows
+    public void close_withIOException_shouldThrowException() {
+        doThrow(new IOException("Exception")).when(mockDelegate).close();
+
+        assertThrows(IOException.class, () -> inputStreamUnderTest.close());
     }
 
     ///////////

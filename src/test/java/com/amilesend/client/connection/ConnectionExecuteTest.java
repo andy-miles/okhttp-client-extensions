@@ -40,7 +40,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
@@ -55,7 +54,6 @@ public class ConnectionExecuteTest extends ConnectionTestBase {
     @SneakyThrows
     public void execute_withValidRequestAndParserAndGzipEncodedResponse_shouldReturnResponse() {
         when(mockGsonFactory.getInstance(any(Connection.class))).thenReturn(mockGson);
-        doNothing().when(connectionUnderTest).validateResponseCode(any(Response.class));
         setUpHttpClientMock(setUpResponseWithBody("gzip"));
 
         final TestResponse testResponse = new TestResponse("response value");
@@ -75,7 +73,6 @@ public class ConnectionExecuteTest extends ConnectionTestBase {
     @SneakyThrows
     public void execute_withValidRequestAndParserAndNonGzipEncodedResponse_shouldReturnResponse() {
         when(mockGsonFactory.getInstance(any(Connection.class))).thenReturn(mockGson);
-        doNothing().when(connectionUnderTest).validateResponseCode(any(Response.class));
         setUpHttpClientMock(setUpResponseWithBody(null));
 
         final TestResponse testResponse = new TestResponse("response value");
@@ -105,7 +102,6 @@ public class ConnectionExecuteTest extends ConnectionTestBase {
     @SneakyThrows
     public void execute_withJsonParseException_shouldThrowException() {
         when(mockGsonFactory.getInstance(any(Connection.class))).thenReturn(mockGson);
-        doNothing().when(connectionUnderTest).validateResponseCode(any(Response.class));
         setUpHttpClientMock(setUpResponseWithBody(null));
 
         final GsonParser<TestResponse> mockParser = mock(GsonParser.class);
@@ -133,7 +129,6 @@ public class ConnectionExecuteTest extends ConnectionTestBase {
     @Test
     @SneakyThrows
     public void execute_withValidRequest_shouldReturnResponseCode() {
-        doNothing().when(connectionUnderTest).validateResponseCode(any(Response.class));
         final Integer expected = Integer.valueOf(SUCCESS_RESPONSE_CODE);
         final Response mockResponse = mock(Response.class);
         when(mockResponse.code()).thenReturn(expected);
@@ -173,44 +168,44 @@ public class ConnectionExecuteTest extends ConnectionTestBase {
         return mockResponse;
     }
 
-    /////////////////////////
-    // validateResponseCode
-    /////////////////////////
-
-    @Test
-    public void validateResponseCode_withThrottledResponse_shouldThrowException() {
-        final long expectedRetryTime = 60L;
-        final Response mockResponse = newMockedResponse(THROTTLED_ERROR_CODE, expectedRetryTime);
-
-        final Throwable thrown = assertThrows(ThrottledException.class,
-                () -> connectionUnderTest.validateResponseCode(mockResponse));
-
-        assertEquals(expectedRetryTime, ((ThrottledException) thrown).getRetryAfterSeconds());
-    }
-
-    @Test
-    public void validateResponseCode_withThrottledResponseAndNullRetryAfterHeader_shouldThrowException() {
-        final Response mockResponse = newMockedResponse(THROTTLED_ERROR_CODE, (Long) null);
-
-        final Throwable thrown = assertThrows(ThrottledException.class,
-                () -> connectionUnderTest.validateResponseCode(mockResponse));
-
-        assertEquals(10L, ((ThrottledException) thrown).getRetryAfterSeconds());
-    }
-
-    @Test
-    public void validateResponseCode_withServerErrorResponseCode_shouldThrowException() {
-        final Response mockResponse = newMockedResponse(SERVER_ERROR_RESPONSE_CODE);
-
-        assertThrows(ResponseException.class, () -> connectionUnderTest.validateResponseCode(mockResponse));
-    }
-
-    @Test
-    public void validateResponseCode_withRequestErrorResponseCode_shouldThrowException() {
-        final Response mockResponse = newMockedResponse(REQUEST_ERROR_CODE);
-
-        assertThrows(RequestException.class, () -> connectionUnderTest.validateResponseCode(mockResponse));
-    }
+//    /////////////////////////
+//    // validateResponseCode
+//    /////////////////////////
+//
+//    @Test
+//    public void validateResponseCode_withThrottledResponse_shouldThrowException() {
+//        final long expectedRetryTime = 60L;
+//        final Response mockResponse = newMockedResponse(THROTTLED_ERROR_CODE, expectedRetryTime);
+//
+//        final Throwable thrown = assertThrows(ThrottledException.class,
+//                () -> connectionUnderTest.validateResponseCode(mockResponse));
+//
+//        assertEquals(expectedRetryTime, ((ThrottledException) thrown).getRetryAfterSeconds());
+//    }
+//
+//    @Test
+//    public void validateResponseCode_withThrottledResponseAndNullRetryAfterHeader_shouldThrowException() {
+//        final Response mockResponse = newMockedResponse(THROTTLED_ERROR_CODE, (Long) null);
+//
+//        final Throwable thrown = assertThrows(ThrottledException.class,
+//                () -> connectionUnderTest.validateResponseCode(mockResponse));
+//
+//        assertEquals(10L, ((ThrottledException) thrown).getRetryAfterSeconds());
+//    }
+//
+//    @Test
+//    public void validateResponseCode_withServerErrorResponseCode_shouldThrowException() {
+//        final Response mockResponse = newMockedResponse(SERVER_ERROR_RESPONSE_CODE);
+//
+//        assertThrows(ResponseException.class, () -> connectionUnderTest.validateResponseCode(mockResponse));
+//    }
+//
+//    @Test
+//    public void validateResponseCode_withRequestErrorResponseCode_shouldThrowException() {
+//        final Response mockResponse = newMockedResponse(REQUEST_ERROR_CODE);
+//
+//        assertThrows(RequestException.class, () -> connectionUnderTest.validateResponseCode(mockResponse));
+//    }
 
     @Data
     public static class TestResponse {

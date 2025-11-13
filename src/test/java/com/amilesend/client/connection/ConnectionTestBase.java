@@ -18,12 +18,13 @@
 package com.amilesend.client.connection;
 
 import com.amilesend.client.connection.auth.AuthManager;
+import com.amilesend.client.connection.retry.Retriable;
+import com.amilesend.client.connection.retry.RetriableCallResponse;
+import com.amilesend.client.connection.retry.RetryStrategy;
 import com.amilesend.client.parse.GsonFactoryBase;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
-import okhttp3.Call;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.BufferedSource;
@@ -34,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,6 +60,8 @@ public class ConnectionTestBase {
     protected GsonFactoryBase mockGsonFactory;
     @Mock
     protected AuthManager mockAuthManager;
+    @Mock
+    protected RetryStrategy mockRetryStrategy;
     protected Connection<GsonFactoryBase> connectionUnderTest;
 
     @BeforeEach
@@ -69,6 +73,7 @@ public class ConnectionTestBase {
                 .baseUrl("http://baseurl")
                 .userAgent(USER_AGENT_VALUE)
                 .isGzipContentEncodingEnabled(true)
+                .retryStrategy(mockRetryStrategy)
                 .build());
     }
 
@@ -98,17 +103,19 @@ public class ConnectionTestBase {
 
     @SneakyThrows
     protected Response setUpHttpClientMock(final Response mockResponse) {
-        final Call mockCall = mock(Call.class);
-        when(mockCall.execute()).thenReturn(mockResponse);
-        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        final RetriableCallResponse mockRetriableResponse = mock(RetriableCallResponse.class);
+        when(mockRetriableResponse.isSuccess()).thenReturn(true);
+        when(mockRetriableResponse.getResponse()).thenReturn(mockResponse);
+        when(mockRetryStrategy.invoke(any(Retriable.class))).thenReturn(mockRetriableResponse);
 
         return mockResponse;
     }
 
     @SneakyThrows
     protected void setUpHttpClientMock(final IOException ioException) {
-        final Call mockCall = mock(Call.class);
-        when(mockCall.execute()).thenThrow(ioException);
-        when(mockHttpClient.newCall(any(Request.class))).thenReturn(mockCall);
+        final RetriableCallResponse mockRetriableResponse = mock(RetriableCallResponse.class);
+        when(mockRetriableResponse.isSuccess()).thenReturn(false);
+        when(mockRetriableResponse.getExceptions()).thenReturn(Collections.singletonList(ioException));
+        when(mockRetryStrategy.invoke(any(Retriable.class))).thenReturn(mockRetriableResponse);
     }
 }

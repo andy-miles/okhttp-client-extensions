@@ -18,9 +18,10 @@
 package com.amilesend.client.connection;
 
 import com.amilesend.client.connection.auth.AuthManager;
+import com.amilesend.client.connection.retry.RetriableCallResponse;
+import com.amilesend.client.connection.retry.RetryStrategy;
 import com.amilesend.client.parse.GsonFactoryBase;
 import com.amilesend.client.parse.parser.GsonParser;
-import com.amilesend.client.util.StringUtils;
 import com.amilesend.client.util.VisibleForTesting;
 import com.google.gson.JsonParseException;
 import lombok.Getter;
@@ -35,6 +36,7 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import static com.amilesend.client.connection.Connection.Headers.ACCEPT;
@@ -72,7 +74,11 @@ public class Connection<G extends GsonFactoryBase> {
     /** The user agent to include in request headers. */
     @NonNull
     private final String userAgent;
+    /** Flag indicator that the response is GZIP encoded. */
     private final boolean isGzipContentEncodingEnabled;
+    /** The retry strategy to use. */
+    @NonNull
+    private final RetryStrategy retryStrategy;
 
     /**
      * Creates a new {@link Request.Builder} with pre-configured headers for request that expect a JSON-formatted
@@ -126,39 +132,50 @@ public class Connection<G extends GsonFactoryBase> {
      * @throws ConnectionException if an error occurred during the transaction
      */
     public Response execute(@NonNull final Request request) throws ConnectionException {
-        try {
-            final Response response = httpClient.newCall(request).execute();
-            validateResponseCode(response);
-            return response;
-        } catch (final IOException ex) {
-            throw new RequestException("Unable to execute request: " + ex.getMessage(), ex);
+        final RetriableCallResponse response = retryStrategy.invoke(() -> httpClient.newCall(request).execute());
+        if (response.isSuccess()) {
+            return response.getResponse();
         }
+
+        final List<Exception> thrownExceptions = response.getExceptions();
+        if (thrownExceptions.isEmpty()) {
+            throw new ConnectionException("Error executing request (no exception provided)");
+        }
+
+        final Exception lastThrownException = response.getExceptions().get(response.getExceptions().size() - 1);
+        if (IOException.class.isInstance(lastThrownException)) {
+            throw new RequestException(
+                    "Unable to execute request: " + lastThrownException.getMessage(),
+                    lastThrownException);
+        } else if (ConnectionException.class.isInstance(lastThrownException)) {
+            throw (ConnectionException) lastThrownException;
+        }
+
+        throw new ConnectionException("Error executing request: " + lastThrownException.getCause(), lastThrownException);
     }
 
+    /**
+     * Validates the response code.
+     *
+     * @param response the response to validate
+     * @deprecated use {@link RetryStrategy#validateResponseCode(Response)} instead
+     */
+    @Deprecated
     protected void validateResponseCode(final Response response) {
-        final int code = response.code();
-        if (code == THROTTLED_RESPONSE_CODE) {
-            final Long retryAfterSeconds = extractRetryAfterHeaderValue(response);
-            final String msg = retryAfterSeconds != null
-                    ? "Request throttled. Retry after " + retryAfterSeconds + " seconds"
-                    : "Request throttled";
-            throw new ThrottledException(msg, retryAfterSeconds);
-        }
-
-        final boolean isRequestError = String.valueOf(code).startsWith("4");
-        if (isRequestError) {
-            throw new RequestException("Error with request (" + code + "): " + response);
-        } else if (!response.isSuccessful()) {
-            throw new ResponseException("Unsuccessful response (" + code + "): " + response);
-        }
+        retryStrategy.validateResponseCode(response);
     }
 
+    /**
+     * Extracts the retry after value from a throttled response header (if it exists).
+     *
+     * @param response the response
+     * @return the retry after value in seconds
+     * @deprecated use {@link RetryStrategy#extractRetryAfterHeaderValue(Response)} instead
+     */
+    @Deprecated
     @VisibleForTesting
     protected Long extractRetryAfterHeaderValue(final Response response) {
-        final String retryAfterHeaderValue = response.header(THROTTLED_RETRY_AFTER_HEADER);
-        return StringUtils.isNotBlank(retryAfterHeaderValue)
-                ? Long.valueOf(retryAfterHeaderValue)
-                : DEFAULT_RETRY_AFTER_SECONDS;
+        return retryStrategy.extractRetryAfterHeaderValue(response);
     }
 
     @UtilityClass

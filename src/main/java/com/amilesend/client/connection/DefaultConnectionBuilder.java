@@ -19,6 +19,12 @@ package com.amilesend.client.connection;
 
 import com.amilesend.client.parse.GsonFactoryBase;
 
+/**
+ * The default builder used to construct a new {@link Connection} instance.
+ *
+ * @see ConnectionBuilder
+ * @see Connection
+ */
 public class DefaultConnectionBuilder
         extends ConnectionBuilder<DefaultConnectionBuilder, GsonFactoryBase, Connection<GsonFactoryBase>> {
     @Override
@@ -32,6 +38,7 @@ public class DefaultConnectionBuilder
                 .baseUrl(getBaseUrl())
                 .userAgent(getUserAgent())
                 .isGzipContentEncodingEnabled(isGzipContentEncodingEnabled())
+                .retryStrategy(getRetryStrategy())
                 .build();
     }
 }

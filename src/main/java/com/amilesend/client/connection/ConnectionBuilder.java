@@ -18,6 +18,8 @@
 package com.amilesend.client.connection;
 
 import com.amilesend.client.connection.auth.AuthManager;
+import com.amilesend.client.connection.retry.NoRetryStrategy;
+import com.amilesend.client.connection.retry.RetryStrategy;
 import com.amilesend.client.parse.GsonFactoryBase;
 import com.amilesend.client.util.Validate;
 import lombok.AccessLevel;
@@ -46,6 +48,8 @@ public abstract class ConnectionBuilder<B extends ConnectionBuilder, G extends G
     private String userAgent;
     /** Flag indicator to expect Gzip encoded responses. */
     private boolean isGzipContentEncodingEnabled;
+    /** The configured retry strategy to use. Note: default is none. */
+    private RetryStrategy retryStrategy = new NoRetryStrategy();
 
     public B httpClient(final OkHttpClient httpClient) {
         this.httpClient = httpClient;
@@ -77,6 +81,11 @@ public abstract class ConnectionBuilder<B extends ConnectionBuilder, G extends G
         return (B) this;
     }
 
+    public B retryStrategy(final RetryStrategy retryStrategy) {
+        this.retryStrategy = retryStrategy;
+        return (B) this;
+    }
+
     public abstract C build();
 
     protected void validateAttributes() {
@@ -87,5 +96,6 @@ public abstract class ConnectionBuilder<B extends ConnectionBuilder, G extends G
         Validate.isTrue(baseUrl.length() < MAX_BASE_URL_STR_LENGTH,
                 "baseUrl length must be less than " + MAX_BASE_URL_STR_LENGTH);
         Validate.notBlank(userAgent, "userAgent must not be blank");
+        Validate.notNull(retryStrategy, "retryStrategy most not be null");
     }
 }

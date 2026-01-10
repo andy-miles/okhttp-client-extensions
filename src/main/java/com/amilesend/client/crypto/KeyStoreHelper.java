@@ -1,6 +1,6 @@
 /*
  * okhttp-client-extensions - A set of helpful extensions to support okhttp clients
- * Copyright © 2025 Andy Miles (andy.miles@amilesend.com)
+ * Copyright © 2025-2026 Andy Miles (andy.miles@amilesend.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
